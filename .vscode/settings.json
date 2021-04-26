@@ -1,3 +1,4 @@
 {
-    "python.linting.pylintEnabled": true
+    "python.linting.pylintEnabled": true,
+    "python.pythonPath": "c:\\Users\\omare\\Desktop\\work\\landing_page_project\\venv\\Scripts\\python.exe"
 }
