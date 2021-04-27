@@ -34,7 +34,7 @@ def send_test_csv_report(test_results, recipients):
 
     email = EmailMultiAlternatives(
         subject = str(timezone.now().strftime("%d-%m-%Y")) + " " + 'Test Results' + 'csv report',
-        from_email='omarehap177@gmail.com',
+        from_email='omarehab177z@gmail.com',
         to = recipients
     )
     email.attach(

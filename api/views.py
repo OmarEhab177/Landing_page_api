@@ -1,8 +1,8 @@
 from .serializers import MessageSerializer
-from .permissions import IsOwner
+# from .permissions import IsOwner
 from .models import Message
 
-from rest_framework.permissions import IsAuthenticated
+# from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 
 # Create your views here.
@@ -12,12 +12,12 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 class MessageListView(ListCreateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
-    permission_classes = (IsAuthenticated,)
+    # permission_classes = (IsAuthenticated,)
 
 class MessageDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
-    permission_classes = (IsOwner,)
+    # permission_classes = (IsOwner,)
 
 
 

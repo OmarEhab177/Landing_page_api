@@ -1,92 +1,68 @@
 import inspect
+from django.test import TestCase
+from .models import Message
 
-from api.models import Message
-from api.utils import send_test_csv_report
-
-from config import settings
-User = settings.base.AUTH_USER_MODEL
-
-from rest_framework.test import APIClient, APITestCase
+from rest_framework.test import APITestCase
 from rest_framework.reverse import reverse
 from rest_framework import status
+from config import settings
+User = settings.base.AUTH_USER_MODEL
+class MessageList(TestCase):
+    """
+    Normal TestCase
+    """
+    @classmethod
+    def setUpTestData(cls) -> None:
+        Message.objects.create(name='Omar', email='test@test.com')
+    
+    def test_message_name_content(self):
+        message = Message.objects.get(id=1)
+        expected_message_name = f'{message.name}'
+        self.assertEqual(expected_message_name, 'Omar')
+
+    def test_message_email_content(self):
+        message = Message.objects.get(id=1)
+        expected_message_email = f'{message.email}'
+        self.assertEqual(expected_message_email, 'test@test.com')
+
+
+
 
 TEST_RESULTS = []
-RECIPIENTS = ['omarehap17@gmail.com']
 
-class MessageListTestCase(APITestCase):
-    def setUp(self) -> None:
-        """
-        This method is used for feeding the initial data that is required by every test method defined in the test case class
-        """
-        self.user = User.objects.create_user(username='test_user', password='adminpass')
-        self.other_user = User.objects.create_user(username='other_user', password='adminpass')
-        self.message = Message.objects.create(user=self.user, name='Ahmed', message='Ahmed Message')
-        self.client = APIClient()
-    
-    @classmethod
-    def tearDownClass(cls):
-        User.objects.filter(username__in=['test_user', 'other_user']).delete()
+class MessageListApi(APITestCase):
+    """
+    API Action Test
+    """
 
-    def test_create_message_with_un_authenticated_user(self):
-        """
-        In this Test Case we are testing the Message Create API using an unauthenticated user.
-        """
-        response = self.client.post(reverse('message'), {'name': 'user1', 'message': 'user1 message'}, format='json' )
+    def test_create_message(self):
 
-        is_passed = response.status_code == status.HTTP_403_FORBIDDEN
-
-        TEST_RESULTS.append({
-            "result": "Passed" if is_passed else "Failed",
-            "test_name": inspect.currentframe().f_code.co_name,
-            "test_description": "Un-authenticated user cannot send message"
-        })
-
-    def test_get_other_user_message_detail(self):
-        """
-        In this Test Case we are testing the Message GET API, and trying to get message details of  a user using a different user credentials.
-        """
-        self.client.login(username='other_user', password='adminpass')
-
-        response = self.client.get(reverse('message', args=[str(self.message.id)]))
-
-        is_passed = response.status_code == status.HTTP_403_FORBIDDEN
-
-        TEST_RESULTS.append({
-            "result": "Passed" if is_passed else "Failed",
-            "test_name": inspect.currentframe().f_code.co_name,
-            "test_description": "Only the Owner can view the Message Detail"
-        })
-
-    def test_create_message_with_authanticated_user(self):
-        self.client.login(username='test_user',password='adminpass')
-
-        response = self.client.post(reverse('todo'), {'name':'User2', 'message':'user2 message'}, format='json')
+        response = self.client.post(reverse('message'), {"name": "Ahmed", "email": "test@test.com",}, format='json')
 
         is_passed = response.status_code == status.HTTP_201_CREATED
 
         TEST_RESULTS.append({
-            "result": "Passed" if is_passed else "Failed",
-            "test_name": inspect.currentframe().f_code.co_name,
-            "test_description": "Message sent successfullt"
+            'result': 'Passed' if is_passed else 'Failed',
+            'test_name': inspect.currentframe().f_code.co_name,
+            'test_description': "Trying to create message"
         })
+        print(TEST_RESULTS)
+    
+    def test_retrive_message_detail(self):
+        
+        message = self.client.post(reverse('message'), {"name": "Eslam", "email": "eslam@test.com",}, format='json')
+        is_passed = message.status_code == status.HTTP_201_CREATED
 
-    def test_get_message_detail(self):
-        self.client.login(username='test_user',password='adminpass')
+        if is_passed:
+            response = self.client.get(reverse('message-detail', args=[str(message.id)]))
 
-        response = self.client.get(reverse('message', args=[str(self.message.id)]))
+            is_passed = response.status_code == status.HTTP_200_OK
 
-        is_passed = response.status_code == status.HTTP_200_OK
-
-        TEST_RESULTS.append({
-            "result": "Passed" if is_passed else "Failed",
-            "test_name": inspect.currentframe().f_code.co_name,
-            "test_description": "Message Detail Retrieved successfullt"
-        })
-
-class CSVReportTest(APITestCase):
-    def test_send_csv(self):
-        send_test_csv_report(
-            test_results=TEST_RESULTS,
-            recipients=RECIPIENTS
-        )
-
+            TEST_RESULTS.append({
+                'result': 'Passed' if is_passed else 'Failed',
+                'test_name': inspect.currentframe().f_code.co_name,
+                'test_description': "Trying to retrieve message detail"
+            })
+            print(TEST_RESULTS)
+        else:
+            print('message wasn\'t created')
